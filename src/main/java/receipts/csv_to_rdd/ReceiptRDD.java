@@ -1,53 +1,19 @@
-package receipts.service;
+package receipts.csv_to_rdd;
 
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import receipts.Util.Util;
 import receipts.case_objects.Receipt;
-import scala.Tuple2;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-public class ReceiptService {
+import static receipts.conf.DataSource.RECEIPTS_COLUMN_NUMBER;
 
-
-
-    /*
-        input: raw data JavaPairRDD<Receipt>
-        output: counted JavaPairRDD<String, Double> in descending order
-     */
-
-    public static JavaPairRDD<String, Double> stateTotalCount(JavaRDD<Receipt> initData) {
-
-        // get state and receipt total data from the raw data
-        JavaPairRDD<String, Double> stateAndReceiptTotal = initData
-                .mapToPair(receipt -> new Tuple2<>(receipt.getStoreState(), receipt.getReceiptTotal()));
-
-        // remove rows that doesn't have 'STATE' record
-        JavaPairRDD<String, Double> receiptsWithStatesRdd = stateAndReceiptTotal
-                .filter(row -> row._1!=null && row._2!=null);
-
-        // add receipt total with same state together
-        JavaPairRDD<String, Double> stateTotal = receiptsWithStatesRdd
-                .reduceByKey(Double::sum);
-
-        // sort by value(receipt total)
-        JavaPairRDD<String, Double> sortedByValueRdd = stateTotal
-                .mapToPair(row -> new Tuple2<>(row._2, row._1))
-                .sortByKey(false)
-                .mapToPair(row -> new Tuple2<>(row._2, row._1));
-
-        // justify the receipt total value to two-digits numbers
-        JavaPairRDD<String, String> numberInTwoDigitsRdd = sortedByValueRdd
-                .mapValues(Util::toTwoDigitsDouble);
-
-        // print the result out
-        numberInTwoDigitsRdd.collect().forEach(System.out::println);
-
-        return sortedByValueRdd;
-    }
+/*
+    methods that read data from csv files to a JavaRDD of corresponding case object
+ */
+public class ReceiptRDD {
 
 
     /*
@@ -75,7 +41,19 @@ public class ReceiptService {
                     return iter;
                 }, true)
                 .map(row -> {     // make the value(state and receipt total) into Receipt Objects
-                    String[] cells = row.split(",");
+
+                    String[] rawCells = row.split(",");
+
+                    // for the cases that the last few cell is empty
+                    // make sure the cells String array is long enough
+                    String[] cells = new String[RECEIPTS_COLUMN_NUMBER];
+                    System.arraycopy(rawCells, 0, cells, 0, rawCells.length);
+                    for(int i=0; i<cells.length; i++) {
+                        if(cells[i] == null) {
+                            cells[i] = "";
+                        }
+                    }
+
                     return new Receipt(
                             cells[0].length()>0? cells[0] : null,
                             cells[1].length()>0? cells[1] : null,
@@ -96,5 +74,4 @@ public class ReceiptService {
                     );
                 });
     }
-
 }

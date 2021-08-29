@@ -41,7 +41,7 @@ public class Util {
                     row[i] = row[i].replace(",", "?");
                 }
             }
-            System.out.println(++cnt + "" + Arrays.toString(row));
+//            System.out.println(row.length + " " + ++cnt + "" + Arrays.toString(row));
         }
         reader.close();
 
