@@ -2,13 +2,29 @@ package receipts.Util;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
+import org.apache.spark.sql.SparkSession;
+import receipts.result_objects.CategoryDiscountRecord;
+import receipts.result_objects.StateTotalRecord;
+import scala.Tuple2;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import static receipts.conf.DataSource.OUTPUT_DIR;
 
 public class Util {
 
@@ -17,12 +33,14 @@ public class Util {
         return String.format("%.2f", (Double)o);
     }
 
+
     /*
         the original csv file has cells that contain comma, which can be a problem using sc.textFile() with split(",")
         make a modified version of the cvs file to solve this problem
         input: Original file direction as String
         output: modified version file direction as String
      */
+
     public static String CommaToQuestionMarkInCSV(String fileDir) throws IOException {
 
         String newDir = fileDir.substring(0, fileDir.length()-4) + "_modified.csv";
@@ -53,6 +71,111 @@ public class Util {
 
         //return the new file dir as String
         return newDir;
+    }
+
+
+    /*
+        get the Date object of m month before the current date
+     */
+
+    public static Date getDateByMonthBefore(Integer m) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MONTH, -m);
+        return calendar.getTime();
+    }
+
+
+    /*
+        JavaPairRDD to JSON file
+     */
+
+    public static void rddToJSON(JavaPairRDD<String, Double> input, String fileName) {
+
+        JavaRDD<CategoryDiscountRecord> rdd = input.map(row -> new CategoryDiscountRecord(row._1, row._2));
+        SparkSession spark = SparkSession.builder().appName("rddToJSON").master("local[*]")
+                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
+                .getOrCreate();
+        Dataset<Row> dataset = spark.createDataFrame(rdd, CategoryDiscountRecord.class);
+        dataset.write().mode(SaveMode.Overwrite).json(OUTPUT_DIR + fileName);
+        try {
+            toOneFile(dataset, fileName, "json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /*
+        JavaPairRDD to CSV
+     */
+
+    public static void rddToCSV(JavaPairRDD<String, Double> input, String fileName) {
+
+        JavaRDD<StateTotalRecord> rdd = input.map(row -> new StateTotalRecord(row._1, row._2));
+        SparkSession spark = SparkSession.builder().appName("rddToCSV").master("local[*]")
+                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
+                .getOrCreate();
+        Dataset<Row> dataset = spark.createDataFrame(rdd, StateTotalRecord.class);
+        dataset.write().mode(SaveMode.Overwrite).format("com.databricks.spark.csv").csv(OUTPUT_DIR + fileName);
+        try {
+            toOneFile(dataset, fileName, "csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /*
+        Dataset to parquet
+     */
+
+    public static void datasetToParquet(Dataset<Row> input, String fileName) {
+        input.write().mode(SaveMode.Overwrite).parquet(OUTPUT_DIR + fileName);
+        try {
+            toOneFile(input, fileName, "parquet");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /*
+        put data from .crc files to one file
+     */
+
+    private static void toOneFile(Dataset<Row> input, String fileName, String fileType) throws IOException {
+
+        Configuration hadoopConfig = new Configuration();
+        FileSystem hdfs = FileSystem.get(hadoopConfig);
+
+        Path srcPath=new Path(OUTPUT_DIR + fileName);
+        Path destPath= new Path(OUTPUT_DIR + fileName + "_merged2." + fileType);
+        File srcFile= Arrays
+                .stream(FileUtil.listFiles(new File(OUTPUT_DIR + fileName)))
+                .filter(f -> f.getPath().endsWith("." + fileType))
+                .findFirst().orElse(null);
+
+        //Copy the CSV file outside of Directory and rename
+        assert srcFile != null;
+        FileUtil.copy(srcFile,hdfs,destPath,true,hadoopConfig);
+
+        //Remove Directory created by df.write()
+        hdfs.delete(srcPath,true);
+
+        //Removes CRC File
+        hdfs.delete(new Path(OUTPUT_DIR + "." + fileName + "_merged2." + fileType + ".crc"),true);
+
+        // Merge Using Haddop API
+        input.repartition(1).write().mode(SaveMode.Overwrite)
+                .csv(OUTPUT_DIR + fileName + "-tmp");
+        Path srcFilePath=new Path(OUTPUT_DIR + fileName + "-tmp");
+        Path destFilePath= new Path(OUTPUT_DIR + fileName + "_merged." + fileType);
+        FileUtil.copyMerge(hdfs, srcFilePath, hdfs, destFilePath, true, hadoopConfig, null);
+
+        //Remove hidden CRC file if not needed.
+        hdfs.delete(new Path(OUTPUT_DIR + "." + fileName + "_merged." + fileType + ".crc"),true);
+        hdfs.delete(new Path(OUTPUT_DIR + fileName + "_merged2." + fileType),true);
     }
 
 }

@@ -3,9 +3,11 @@ package receipts.case_objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
-public class ReceiptItem {
+public class ReceiptItem implements Serializable {
 
     String RewardsReceiptId;
     Integer ItemIndex;

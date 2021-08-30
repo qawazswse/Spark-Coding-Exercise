@@ -2,21 +2,46 @@ package receipts.service;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import receipts.Util.Util;
+import receipts.case_objects.Receipt;
 import receipts.case_objects.ReceiptItem;
 import scala.Tuple2;
 
 public class ReceiptItemRddService {
 
+
     /*
         calculate average discount percentage for each category in descending order
-        input: raw data JavaPairRDD<ReceiptItem>
+        input: raw data JavaPairRDD<Receipt>, raw data JavaPairRDD<ReceiptItem>, and how many month before
         output: counted JavaPairRDD<String, Double> in descending order
      */
 
-    public static JavaPairRDD<String, Double> categoryDiscount(JavaRDD<ReceiptItem> initData) {
+    public static JavaPairRDD<String, Double> categoryDiscount(
+            JavaRDD<Receipt> receiptData, JavaRDD<ReceiptItem> itemData, Integer m) {
+
+        // join two JavaRDD together
+        JavaPairRDD<String, Receipt> receiptJavaPairRdd = receiptData
+                .mapToPair(row -> new Tuple2<>(row.getReceiptId(), row));
+
+        JavaPairRDD<String, ReceiptItem> receiptItemJavaPairRdd = itemData
+                .mapToPair(row -> new Tuple2<>(row.getRewardsReceiptId(), row));
+
+        JavaPairRDD<String, Tuple2<ReceiptItem, Receipt>> joinedRdd = receiptItemJavaPairRdd
+                .join(receiptJavaPairRdd);
+
+        // only choose the information in 'm' months
+        JavaPairRDD<String, Tuple2<ReceiptItem, Receipt>> InMonthsRdd = joinedRdd
+                .filter(
+                        r -> r._2._2
+                                .getReceiptPurchaseDate()
+                                .after(Util.getDateByMonthBefore(m))
+                );
+
+        // put the filtered ReceiptItem objects into a JavaRDD
+        JavaRDD<ReceiptItem> e = InMonthsRdd.map(r -> r._2._1);
 
         // get Category, DiscountedPrice, and ItemPrice from the raw data
-        JavaPairRDD<String, Tuple2<Double, Double>> categoryPriceRdd = initData
+        JavaPairRDD<String, Tuple2<Double, Double>> categoryPriceRdd = e
                 .mapToPair(row -> new Tuple2<>(
                         row.getCategory(),
                         new Tuple2<>(

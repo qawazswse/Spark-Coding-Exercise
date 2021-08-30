@@ -3,11 +3,12 @@ package receipts.case_objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class Receipt {
+public class Receipt implements Serializable {
 
     String ReceiptId;
     String StoreName;

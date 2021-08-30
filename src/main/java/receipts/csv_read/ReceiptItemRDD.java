@@ -1,4 +1,4 @@
-package receipts.csv_to_rdd;
+package receipts.csv_read;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;

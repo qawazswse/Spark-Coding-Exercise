@@ -12,17 +12,22 @@ import scala.Tuple2;
 public class ReceiptRddService {
 
 
-
     /*
         calculate total receipt price for each state in descending order
-        input: raw data JavaPairRDD<Receipt>
+        input: raw data JavaPairRDD<Receipt>, and how many month before
         output: counted JavaPairRDD<String, Double> in descending order
      */
 
-    public static JavaPairRDD<String, Double> stateTotalCount(JavaRDD<Receipt> initData) {
+    public static JavaPairRDD<String, Double> stateTotalCount(JavaRDD<Receipt> initData, Integer m) {
+
+        // only choose the information in 'm' months
+        JavaRDD<Receipt> InMonthsRdd = initData
+                .filter(receipt -> receipt.getScanDate().after(Util.getDateByMonthBefore(m)));
+
+        InMonthsRdd.collect().forEach(System.out::println);
 
         // get state and receipt total data from the raw data
-        JavaPairRDD<String, Double> stateAndReceiptTotal = initData
+        JavaPairRDD<String, Double> stateAndReceiptTotalRdd = InMonthsRdd
                 .mapToPair(receipt -> new Tuple2<>(
                         receipt.getStoreState(),
                         receipt.getReceiptTotal()
@@ -30,7 +35,7 @@ public class ReceiptRddService {
                 );
 
         // remove rows that doesn't have 'STATE' or 'receipt total' record
-        JavaPairRDD<String, Double> receiptsWithFullInformationRdd = stateAndReceiptTotal
+        JavaPairRDD<String, Double> receiptsWithFullInformationRdd = stateAndReceiptTotalRdd
                 .filter(row -> row._1!=null && row._2!=null);
 
         // add receipt total with same state together

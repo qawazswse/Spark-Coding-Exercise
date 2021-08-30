@@ -1,4 +1,4 @@
-package receipts.csv_to_rdd;
+package receipts.csv_read;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -8,6 +8,7 @@ import receipts.case_objects.Receipt;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
+import static receipts.conf.DataSource.DATA_FORMAT_RECEIPTS_1;
 import static receipts.conf.DataSource.RECEIPTS_COLUMN_NUMBER;
 
 /*
@@ -31,7 +32,7 @@ public class ReceiptRDD {
             System.out.println("Cannot find file: " + fileDir);
         }
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss.sss");
+        SimpleDateFormat formatter = new SimpleDateFormat(DATA_FORMAT_RECEIPTS_1);
 
         return sc.textFile(fileDir)
                 .mapPartitionsWithIndex((index, iter) -> {  // remove the header row
