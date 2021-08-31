@@ -29,18 +29,19 @@ Simple Spark project runs in local environment.
 * JDK 11
 
 ### Executing program
-* Using terminal, cd to "Spark Coding Exercise/target/" 
+* Using terminal, cd to "Spark Coding Exercise/"
+* Using terminal, execute "mvn package assembly:single"
+* Using terminal, cd to "target/" 
 * Run "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
 * Get the output file in "Spark Coding Exercise/output/" folder
 ## Authors
 Contributors names and contact info
-* @qawazswse
+* @qawazswse (myself)
 ## Version History
 * 0.4
   * finished the main of the program
   * packed the program into a jar package in target folder
   * finished the readme.md file
-  * *** The jar file is too large (over 100Mb), currently trying solutions...
 * 0.3
     * achieved the 3rd analyze
     * achieved output-to-file goal for 3 analyzes
