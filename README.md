@@ -36,6 +36,11 @@ Simple Spark project runs in local environment.
 Contributors names and contact info
 * @qawazswse
 ## Version History
+* 0.4
+  * finished the main of the program
+  * packed the program into a jar package in target folder
+  * finished the readme.md file
+  * *** The jar file is too large (over 100Mb), currently trying solutions...
 * 0.3
     * achieved the 3rd analyze
     * achieved output-to-file goal for 3 analyzes
