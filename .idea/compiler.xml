@@ -7,7 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Spark Coding Exercise" />
+        <module name="spark_coding_exercise" />
       </profile>
     </annotationProcessing>
   </component>

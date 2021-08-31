@@ -2,8 +2,6 @@ package receipts.Util;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -16,7 +14,6 @@ import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import receipts.result_objects.CategoryDiscountRecord;
 import receipts.result_objects.StateTotalRecord;
-import scala.Tuple2;
 
 import java.io.File;
 import java.io.FileReader;
@@ -90,16 +87,11 @@ public class Util {
         JavaPairRDD to JSON file
      */
 
-    public static void rddToJSON(JavaPairRDD<String, Double> input, String fileName) {
+    public static void datasetToJSON(Dataset<Row> input, String fileName) {
 
-        JavaRDD<CategoryDiscountRecord> rdd = input.map(row -> new CategoryDiscountRecord(row._1, row._2));
-        SparkSession spark = SparkSession.builder().appName("rddToJSON").master("local[*]")
-                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
-                .getOrCreate();
-        Dataset<Row> dataset = spark.createDataFrame(rdd, CategoryDiscountRecord.class);
-        dataset.write().mode(SaveMode.Overwrite).json(OUTPUT_DIR + fileName);
+        input.write().mode(SaveMode.Overwrite).json(OUTPUT_DIR + fileName);
         try {
-            toOneFile(dataset, fileName, "json");
+            toOneFile(input, fileName, "json");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -110,16 +102,11 @@ public class Util {
         JavaPairRDD to CSV
      */
 
-    public static void rddToCSV(JavaPairRDD<String, Double> input, String fileName) {
+    public static void datasetToCSV(Dataset<Row> input, String fileName) {
 
-        JavaRDD<StateTotalRecord> rdd = input.map(row -> new StateTotalRecord(row._1, row._2));
-        SparkSession spark = SparkSession.builder().appName("rddToCSV").master("local[*]")
-                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
-                .getOrCreate();
-        Dataset<Row> dataset = spark.createDataFrame(rdd, StateTotalRecord.class);
-        dataset.write().mode(SaveMode.Overwrite).format("com.databricks.spark.csv").csv(OUTPUT_DIR + fileName);
+        input.write().mode(SaveMode.Overwrite).format("com.databricks.spark.csv").csv(OUTPUT_DIR + fileName);
         try {
-            toOneFile(dataset, fileName, "csv");
+            toOneFile(input, fileName, "csv");
         } catch (IOException e) {
             e.printStackTrace();
         }

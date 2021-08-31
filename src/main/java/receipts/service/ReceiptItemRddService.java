@@ -2,9 +2,13 @@ package receipts.service;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import receipts.Util.Util;
 import receipts.case_objects.Receipt;
 import receipts.case_objects.ReceiptItem;
+import receipts.result_objects.StateTotalRecord;
 import scala.Tuple2;
 
 public class ReceiptItemRddService {
@@ -16,7 +20,7 @@ public class ReceiptItemRddService {
         output: counted JavaPairRDD<String, Double> in descending order
      */
 
-    public static JavaPairRDD<String, Double> categoryDiscount(
+    public static Dataset<Row> categoryDiscount(
             JavaRDD<Receipt> receiptData, JavaRDD<ReceiptItem> itemData, Integer m) {
 
         // join two JavaRDD together
@@ -80,6 +84,12 @@ public class ReceiptItemRddService {
         // print out the top 50 categories with the largest discount percentage
         sortedByValueRdd.take(50).forEach(System.out::println);
 
-        return sortedByValueRdd;
+        JavaRDD<StateTotalRecord> rdd = sortedByValueRdd.map(row -> new StateTotalRecord(row._1, row._2));
+
+        SparkSession spark = SparkSession.builder().appName("categoryDiscount").master("local[*]")
+                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
+                .getOrCreate();
+
+        return spark.createDataFrame(rdd, StateTotalRecord.class);
     }
 }

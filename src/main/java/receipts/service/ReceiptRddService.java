@@ -2,9 +2,15 @@ package receipts.service;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import receipts.Util.Util;
 import receipts.case_objects.Receipt;
+import receipts.result_objects.StateTotalRecord;
 import scala.Tuple2;
+
+import java.util.List;
 
 /*
     deal with logic related to receipts data
@@ -18,7 +24,7 @@ public class ReceiptRddService {
         output: counted JavaPairRDD<String, Double> in descending order
      */
 
-    public static JavaPairRDD<String, Double> stateTotalCount(JavaRDD<Receipt> initData, Integer m) {
+    public static Dataset<Row> stateTotalCount(JavaRDD<Receipt> initData, Integer m) {
 
         // only choose the information in 'm' months
         JavaRDD<Receipt> InMonthsRdd = initData
@@ -55,7 +61,13 @@ public class ReceiptRddService {
         // print the result out
         numberInTwoDigitsRdd.collect().forEach(System.out::println);
 
-        return sortedByValueRdd;
+        JavaRDD<StateTotalRecord> rdd = sortedByValueRdd.map(row -> new StateTotalRecord(row._1, row._2));
+
+        SparkSession spark = SparkSession.builder().appName("stateTotalCount").master("local[*]")
+                .config("spark.sql.wareHouse.dir", "file:///c:tmp/")
+                .getOrCreate();
+
+        return spark.createDataFrame(rdd, StateTotalRecord.class);
     }
 
 }

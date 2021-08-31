@@ -1,0 +1,12 @@
+receipts\result_objects\StateTotalRecord.class
+receipts\csv_read\ReceiptItemRDD.class
+receipts\case_objects\ReceiptItem.class
+receipts\conf\DataSource.class
+receipts\service\ReceiptRddService.class
+receipts\result_objects\CategoryDiscountRecord.class
+receipts\service\ReceiptItemRddService.class
+Main.class
+receipts\case_objects\Receipt.class
+receipts\service\ReceiptSQLService.class
+receipts\Util\Util.class
+receipts\csv_read\ReceiptRDD.class

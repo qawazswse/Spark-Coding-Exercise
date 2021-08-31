@@ -26,6 +26,6 @@ public class DataSource {
 
 
     // output folder dir
-    public final static String OUTPUT_DIR = "output/";
+    public final static String OUTPUT_DIR = "./output/";
 
 }
