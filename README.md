@@ -21,21 +21,29 @@ Simple Spark project runs in local environment.
         ```
         There are 3 type of output files supported: csv, json, parquet
         ```
+    * Example: "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar 0 20 csv"
     * when the program finish running, the output file will be generated in the "output" folder
     
 ## Getting Started  
-###Dependencies:
+### Dependencies:
 * Windows 10
 * JDK 11
+* Maven
 
 ### Executing program
-* Using terminal, cd to "Spark Coding Exercise/target/" 
-* Run "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
+* Using terminal, cd to "Spark Coding Exercise/"
+* Using terminal, execute "mvn package assembly:single"
+* Using terminal, cd to "target/" 
+* Using terminal, execute "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
 * Get the output file in "Spark Coding Exercise/output/" folder
 ## Authors
 Contributors names and contact info
-* @qawazswse
+* @qawazswse (myself)
 ## Version History
+* 0.4
+  * finished the main of the program
+  * packed the program into a jar package in target folder
+  * finished the readme.md file
 * 0.3
     * achieved the 3rd analyze
     * achieved output-to-file goal for 3 analyzes
