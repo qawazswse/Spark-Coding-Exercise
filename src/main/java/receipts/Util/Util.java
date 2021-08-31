@@ -158,6 +158,10 @@ public class Util {
                 .csv(OUTPUT_DIR + fileName + "-tmp");
         Path srcFilePath=new Path(OUTPUT_DIR + fileName + "-tmp");
         Path destFilePath= new Path(OUTPUT_DIR + fileName + "_merged." + fileType);
+        File file = new File(OUTPUT_DIR + fileName + "_merged." + fileType);
+        if(file.exists()) {
+            hdfs.delete(new Path(OUTPUT_DIR + fileName + "_merged." + fileType),true);
+        }
         FileUtil.copyMerge(hdfs, srcFilePath, hdfs, destFilePath, true, hadoopConfig, null);
 
         //Remove hidden CRC file if not needed.
