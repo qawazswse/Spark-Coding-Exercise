@@ -27,12 +27,13 @@ Simple Spark project runs in local environment.
 ### Dependencies:
 * Windows 10
 * JDK 11
+* Maven
 
 ### Executing program
 * Using terminal, cd to "Spark Coding Exercise/"
 * Using terminal, execute "mvn package assembly:single"
 * Using terminal, cd to "target/" 
-* Run "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
+* Using terminal, execute "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
 * Get the output file in "Spark Coding Exercise/output/" folder
 ## Authors
 Contributors names and contact info
