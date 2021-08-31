@@ -21,6 +21,7 @@ Simple Spark project runs in local environment.
         ```
         There are 3 type of output files supported: csv, json, parquet
         ```
+    * Example: "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar 0 20 csv"
     * when the program finish running, the output file will be generated in the "output" folder
     
 ## Getting Started  
