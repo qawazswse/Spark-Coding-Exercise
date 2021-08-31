@@ -2,3 +2,5 @@
 src/main/resources/receipts/rewards_receipts_lat_v3_modified.csv
 src/main/resources/receipts/rewards_receipts_item_lat_v2_modified.csv
 output
+out
+target
