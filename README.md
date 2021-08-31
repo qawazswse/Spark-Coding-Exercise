@@ -24,7 +24,7 @@ Simple Spark project runs in local environment.
     * when the program finish running, the output file will be generated in the "output" folder
     
 ## Getting Started  
-###Dependencies:
+### Dependencies:
 * Windows 10
 * JDK 11
 
