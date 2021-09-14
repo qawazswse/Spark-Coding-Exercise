@@ -26,20 +26,27 @@ Simple Spark project runs in local environment.
     
 ## Getting Started  
 ### Dependencies:
-* Windows 10
 * JDK 11
-* Maven
+* Maven installed
 
 ### Executing program
-* Using terminal, cd to "Spark Coding Exercise/"
-* Using terminal, execute "mvn package assembly:single"
-* Using terminal, cd to "target/" 
-* Using terminal, execute "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters]"
-* Get the output file in "Spark Coding Exercise/output/" folder
+* Use terminal, cd to "Spark-Coding-Exercise-main" folder which is the project folder
+* Use terminal, execute "mvn package assembly:single"
+* When it's done, use terminal, cd to "target" folder
+* Copy the jar file to the outer path wich is "Spark-Coding-Exercise-main" folder
+* Use terminal, execute "cd .." to the outer folder
+* Use terminal, execute "java -jar spark_coding_exercise-1.0-SNAPSHOT.jar [parameters(for example: 1 24 csv)]"
+* Finally, you can get the output file in "output" folder
 ## Authors
 Contributors names and contact info
 * @qawazswse (myself)
 ## Version History
+* 1.1
+  * use a main function to implement the analyzes instead of method that return collections
+  * add an interfaces and different kind of string to get from result objects
+  * avoid unnecessary info logs
+* 1.0
+  * fixed bug: output file cannot be generated again (overwrite). now it's good.
 * 0.4
   * finished the main of the program
   * packed the program into a jar package in target folder
