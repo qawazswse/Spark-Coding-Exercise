@@ -8,8 +8,8 @@ import receipts.case_objects.Receipt;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import static receipts.conf.DataSource.DATA_FORMAT_RECEIPTS_1;
-import static receipts.conf.DataSource.RECEIPTS_COLUMN_NUMBER;
+import static receipts.conf.DataSourceConf.DATA_FORMAT_RECEIPTS_1;
+import static receipts.conf.DataSourceConf.RECEIPTS_COLUMN_NUMBER;
 
 /*
     methods that read data from csv files to a JavaRDD of corresponding case object
@@ -17,9 +17,11 @@ import static receipts.conf.DataSource.RECEIPTS_COLUMN_NUMBER;
 public class ReceiptRDD {
 
 
-    /*
-        input: JavaSparkContext, and file direction as a String
-        output: raw data JavaRDD
+    /**
+     * read receipts CSV file into javaRDD object
+         @param sc : JavaSparkContext
+         @param fileDir : file direction as a String
+         @return : raw data JavaRDD
      */
 
     public static JavaRDD<Receipt> setupReceiptsDataRdd(JavaSparkContext sc, String fileDir) {

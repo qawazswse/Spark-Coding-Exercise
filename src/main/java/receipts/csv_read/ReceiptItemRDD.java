@@ -7,13 +7,15 @@ import receipts.case_objects.ReceiptItem;
 
 import java.io.IOException;
 
-import static receipts.conf.DataSource.RECEIPTS_ITEM_COLUMN_NUMBER;
+import static receipts.conf.DataSourceConf.RECEIPTS_ITEM_COLUMN_NUMBER;
 
 public class ReceiptItemRDD {
 
-    /*
-        input: JavaSparkContext, and file direction as a String
-        output: raw data JavaRDD
+    /**
+     * read receipts items CSV file into javaRDD object
+        @param sc : JavaSparkContext
+        @param fileDir : file direction as a String
+        @return : raw data JavaRDD
      */
 
     public static JavaRDD<ReceiptItem> setupReceiptsItemDataRdd(JavaSparkContext sc, String fileDir) {

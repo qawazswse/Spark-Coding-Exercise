@@ -1,9 +1,9 @@
 package receipts.conf;
 
-/*
+/**
     data source file information
  */
-public class DataSource {
+public class DataSourceConf {
 
 
     // column number of the csv file

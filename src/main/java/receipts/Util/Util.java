@@ -6,36 +6,26 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SaveMode;
-import org.apache.spark.sql.SparkSession;
-import receipts.result_objects.CategoryDiscountRecord;
-import receipts.result_objects.StateTotalRecord;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
-import static receipts.conf.DataSource.OUTPUT_DIR;
+import static receipts.conf.DataSourceConf.OUTPUT_DIR;
 
 public class Util {
 
     // turn a Double value to two-digits String
     public static String toTwoDigitsDouble(Object o) {
-        return String.format("%.2f", (Double)o);
+        return String.format("%.2f", o);
     }
 
 
-    /*
+    /**
         the original csv file has cells that contain comma, which can be a problem using sc.textFile() with split(",")
         make a modified version of the cvs file to solve this problem
-        input: Original file direction as String
-        output: modified version file direction as String
+        @param fileDir: Original file direction as String
+        @return : modified version file direction as String
      */
 
     public static String CommaToQuestionMarkInCSV(String fileDir) throws IOException {
@@ -71,67 +61,28 @@ public class Util {
     }
 
 
-    /*
+    /**
         get the Date object of m month before the current date
+        @param months : analyse data in how many months
+        @return : the date before input months
      */
 
-    public static Date getDateByMonthBefore(Integer m) {
+    public static Date getDateByMonthBefore(Integer months) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        calendar.add(Calendar.MONTH, -m);
+        calendar.add(Calendar.MONTH, -months);
         return calendar.getTime();
     }
 
 
-    /*
-        JavaPairRDD to JSON file
-     */
-
-    public static void datasetToJSON(Dataset<Row> input, String fileName) {
-
-        input.write().mode(SaveMode.Overwrite).json(OUTPUT_DIR + fileName);
-        try {
-            toOneFile(input, fileName, "json");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /*
-        JavaPairRDD to CSV
-     */
-
-    public static void datasetToCSV(Dataset<Row> input, String fileName) {
-
-        input.write().mode(SaveMode.Overwrite).format("com.databricks.spark.csv").csv(OUTPUT_DIR + fileName);
-        try {
-            toOneFile(input, fileName, "csv");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /*
-        Dataset to parquet
-     */
-
-    public static void datasetToParquet(Dataset<Row> input, String fileName) {
-        input.write().mode(SaveMode.Overwrite).parquet(OUTPUT_DIR + fileName);
-        try {
-            toOneFile(input, fileName, "parquet");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /*
+    /**
         put data from .crc files to one file
+        @param input : the input data as JavaRDD
+        @param fileName : the name of the output file
+        @param fileType : the type choice of the output file
      */
 
-    private static void toOneFile(Dataset<Row> input, String fileName, String fileType) throws IOException {
+    public static void toOneFile(JavaRDD<? extends Serializable> input, String fileName, String fileType) throws IOException {
 
         Configuration hadoopConfig = new Configuration();
         FileSystem hdfs = FileSystem.get(hadoopConfig);
@@ -140,7 +91,7 @@ public class Util {
         Path destPath= new Path(OUTPUT_DIR + fileName + "_merged2." + fileType);
         File srcFile= Arrays
                 .stream(FileUtil.listFiles(new File(OUTPUT_DIR + fileName)))
-                .filter(f -> f.getPath().endsWith("." + fileType))
+                .filter(f -> f.getPath().contains("part"))
                 .findFirst().orElse(null);
 
         //Copy the CSV file outside of Directory and rename
@@ -154,8 +105,7 @@ public class Util {
         hdfs.delete(new Path(OUTPUT_DIR + "." + fileName + "_merged2." + fileType + ".crc"),true);
 
         // Merge Using Haddop API
-        input.repartition(1).write().mode(SaveMode.Overwrite)
-                .csv(OUTPUT_DIR + fileName + "-tmp");
+        input.coalesce(1, true).saveAsTextFile(OUTPUT_DIR + fileName + "-tmp");
         Path srcFilePath=new Path(OUTPUT_DIR + fileName + "-tmp");
         Path destFilePath= new Path(OUTPUT_DIR + fileName + "_merged." + fileType);
         File file = new File(OUTPUT_DIR + fileName + "_merged." + fileType);
@@ -163,7 +113,6 @@ public class Util {
             hdfs.delete(new Path(OUTPUT_DIR + fileName + "_merged." + fileType),true);
         }
         FileUtil.copyMerge(hdfs, srcFilePath, hdfs, destFilePath, true, hadoopConfig, null);
-
         //Remove hidden CRC file if not needed.
         hdfs.delete(new Path(OUTPUT_DIR + "." + fileName + "_merged." + fileType + ".crc"),true);
         hdfs.delete(new Path(OUTPUT_DIR + fileName + "_merged2." + fileType),true);

@@ -5,30 +5,30 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class StateTotalRecord implements ResultObject {
+public class UserPurchaseRecord implements ResultObject {
 
-    private String state;
-    private Double total;
+    private String userId;
+    private Double purchase;
 
     @Override
     public String getJsonString() {
         return "{" +
-                "userId='" + state + '\'' +
-                ", purchase=" + total +
+                "userId='" + userId + '\'' +
+                ", purchase=" + purchase +
                 '}' + ',';
     }
 
     @Override
     public String getParquetString() {
         return "{" +
-                "'userId':'" + state + '\'' +
-                ", 'purchase':" + total +
+                "'userId':'" + userId + '\'' +
+                ", 'purchase':" + purchase +
                 '}';
     }
 
     @Override
     public String getCsvString() {
-        return state + "," + total;
+        return userId + "," + purchase;
     }
 
     @Override
@@ -43,5 +43,4 @@ public class StateTotalRecord implements ResultObject {
         }
         return null;
     }
-
 }

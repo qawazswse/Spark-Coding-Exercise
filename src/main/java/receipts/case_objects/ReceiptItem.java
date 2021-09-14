@@ -9,18 +9,18 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ReceiptItem implements Serializable {
 
-    String RewardsReceiptId;
-    Integer ItemIndex;
-    String ReceiptDescription;
-    String BarcodeOrig;
-    String Barcode;
-    Integer Quantity;
-    Double ItemPrice;
-    Double DiscountedPrice;
-    Double Weight;
-    String RewardsGroup;
-    String Brand;
-    String Category;
-    String ProductName;
+    private String RewardsReceiptId;
+    private Integer ItemIndex;
+    private String ReceiptDescription;
+    private String BarcodeOrig;
+    private String Barcode;
+    private Integer Quantity;
+    private Double ItemPrice;
+    private Double DiscountedPrice;
+    private Double Weight;
+    private String RewardsGroup;
+    private String Brand;
+    private String Category;
+    private String ProductName;
 
 }

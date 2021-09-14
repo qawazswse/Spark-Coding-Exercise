@@ -1,18 +1,7 @@
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import receipts.case_objects.Receipt;
-import receipts.case_objects.ReceiptItem;
-import receipts.conf.DataSource;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
-import static receipts.Util.Util.*;
-import static receipts.csv_read.ReceiptItemRDD.setupReceiptsItemDataRdd;
-import static receipts.csv_read.ReceiptRDD.setupReceiptsDataRdd;
-import static receipts.service.ReceiptRddService.stateTotalCount;
-import static receipts.service.ReceiptItemRddService.categoryDiscount;
-import static receipts.service.ReceiptSQLService.userTotalPurchase;
+import receipts.analyze.*;
 
 public class Main {
 
@@ -52,75 +41,30 @@ public class Main {
 
         // parameters to int
         int analyze = Integer.parseInt(args[0]);
-        int months = Integer.parseInt(args[1]);
-        String fileType = args[2];
 
-        // initialize
-        System.setProperty("hadoop.home.dir", "c:/winutils");
-        SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        Logger.getLogger("org").setLevel(Level.WARN);
+        Logger.getLogger("akka").setLevel(Level.WARN);
 
-        // variables
-        String fileName = "";
-        Dataset<Row> result;
-        JavaRDD<Receipt> ReceiptData = setupReceiptsDataRdd(sc, DataSource.REWARDS_RECEIPTS_LAT_V3);;
-        JavaRDD<ReceiptItem> ReceiptItemData = setupReceiptsItemDataRdd(sc, DataSource.REWARDS_RECEIPTS_ITEM_LAT_V2);
+        args = new String[]{args[1], args[2]};
 
         switch (analyze) {
 
             // analyze 0:   calculate total receipt price for each state in descending order
             case 0:
-                result = stateTotalCount(ReceiptData, months);
-                fileName = "state_total_in_last_" + months + "_months";
-                chooseOutputFileFormat(result, fileName, fileType);
+                ReceiptRddAnalyze.main(args);
                 break;
 
             // analyze 1:   calculate average discount percentage for each category in descending order
             case 1:
-                result = categoryDiscount(ReceiptData, ReceiptItemData, months);
-                fileName = "category_discount_in_last_" + months + "_months";
-                chooseOutputFileFormat(result, fileName, fileType);
+                ReceiptItemRddAnalyze.main(args);
                 break;
 
             // analyze 2:   calculate total receipt price for each user in descending order
             case 2:
-                result = userTotalPurchase(months);
-                fileName = "user_total_purchase_in_last_" + months + "_months";
-                chooseOutputFileFormat(result, fileName, fileType);
+                ReceiptSQLAnalyze.main(args);
                 break;
         }
 
-        System.out.println(
-                fileName + "." + fileType + "\n"
-                + "is now ready in the output folder."
-        );
-
-    }
-
-
-    /*
-        decide which function to use by args[2]
-     */
-
-    private static void chooseOutputFileFormat(Dataset<Row> input, String fileName, String fileType) {
-
-        switch (fileType) {
-
-            // output in csv format
-            case "csv":
-                datasetToCSV(input, fileName);
-                break;
-
-            // output in JSON format
-            case "json":
-                datasetToJSON(input, fileName);
-                break;
-
-            // output in parquet format
-            case "parquet":
-                datasetToParquet(input, fileName);
-                break;
-        }
     }
 
 }

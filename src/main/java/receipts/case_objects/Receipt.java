@@ -10,21 +10,21 @@ import java.util.Date;
 @AllArgsConstructor
 public class Receipt implements Serializable {
 
-    String ReceiptId;
-    String StoreName;
-    String StoreAddress;
-    String StoreCity;
-    String StoreState;
-    String StoreZIP;
-    String StorePhone;
-    Integer StoreNumber;
-    String UserId;
-    Date ScanDate;
-    Date ReceiptPurchaseDate;
-    Double ReceiptTotal;
-    Integer ReceiptItemCount;
-    String ConsumerUserAgent;
-    Date ModifyDate;
-    Boolean DigitalReceipt;
+    private String ReceiptId;
+    private String StoreName;
+    private String StoreAddress;
+    private String StoreCity;
+    private String StoreState;
+    private String StoreZIP;
+    private String StorePhone;
+    private Integer StoreNumber;
+    private String UserId;
+    private Date ScanDate;
+    private Date ReceiptPurchaseDate;
+    private Double ReceiptTotal;
+    private Integer ReceiptItemCount;
+    private String ConsumerUserAgent;
+    private Date ModifyDate;
+    private Boolean DigitalReceipt;
 
 }
