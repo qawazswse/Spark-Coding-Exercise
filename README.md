@@ -26,7 +26,7 @@ Simple Spark project runs in local environment.
     
 ## Getting Started  
 ### Dependencies:
-* JDK 11
+* JDK 8 or newer
 * Maven installed
 
 ### Executing program
